@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TftMatchV1 implements TftMatchAPI {
@@ -37,7 +38,9 @@ public class TftMatchV1 implements TftMatchAPI {
         List<TftMatch> output = new ArrayList<>();
         for (String matchId : commonMatchesId) {
             ResponseEntity<TftMatchV1Representation> responseEntity = restTemplate.getForEntity(getMatchInfoUrl(matchId), TftMatchV1Representation.class);
-            output.add(mapper.toMatch(summoner1, firstSummonerId, summoner2, secondSummonerId, responseEntity.getBody(), matchId));
+            if (isDuoMatch(responseEntity.getBody())) {
+                output.add(mapper.toMatch(summoner1, firstSummonerId, summoner2, secondSummonerId, responseEntity.getBody(), matchId));
+            }
         }
         return output;
     }
@@ -64,6 +67,10 @@ public class TftMatchV1 implements TftMatchAPI {
 
     private String getMatchInfoUrl(String matchId) {
         return String.format("https://americas.api.riotgames.com/tft/match/v1/matches/%s?api_key=%s", matchId, leagueAPIWebClient.getApiKey());
+    }
+
+    private boolean isDuoMatch(TftMatchV1Representation representation) {
+        return representation.info.participants.get(0).getPartner_group_id().isPresent();
     }
 
 }

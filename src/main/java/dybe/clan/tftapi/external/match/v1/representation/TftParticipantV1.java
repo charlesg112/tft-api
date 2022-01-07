@@ -2,6 +2,7 @@ package dybe.clan.tftapi.external.match.v1.representation;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 public class TftParticipantV1 {
@@ -10,6 +11,7 @@ public class TftParticipantV1 {
 
     private int level;
 
+    @Column(nullable = true)
     private int partner_group_id;
 
     private int total_damage_to_players;
@@ -34,8 +36,8 @@ public class TftParticipantV1 {
         return level;
     }
 
-    public int getPartner_group_id() {
-        return partner_group_id;
+    public Optional<Integer> getPartner_group_id() {
+        return Optional.ofNullable(partner_group_id);
     }
 
     public List<TftTraitsV1> getTraits() {

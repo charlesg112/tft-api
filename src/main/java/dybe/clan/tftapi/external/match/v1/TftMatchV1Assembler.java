@@ -21,7 +21,7 @@ public class TftMatchV1Assembler {
         }
 
         for (TftParticipantV1 participant : representation.info.participants) {
-            TftDuo duo = duos.get(participant.getPartner_group_id() - 1);
+            TftDuo duo = duos.get(participant.getPartner_group_id().get() - 1);
             List<TftUnit> units = participant.getUnits().stream().map(this::toTftUnit).collect(Collectors.toList());
             List<TftTrait> traits = participant.getTraits().stream().map(this::toTftTrait).collect(Collectors.toList());
             String name = getName(participant, summoner1Id, summoner1, summoner2Id, summoner2);
@@ -30,7 +30,7 @@ public class TftMatchV1Assembler {
             duo.participants.add(new TftParticipant(name, participant.getTotal_damage_to_players(), participant.getLevel(), participant.getGold_left(), units, traits));
         }
 
-        return new TftMatch(matchId, duos);
+        return new TftMatch(matchId, duos, representation.info.getGame_datetime());
     }
 
     private TftUnit toTftUnit(TftUnitV1 tftUnitV1) {
