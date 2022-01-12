@@ -25,7 +25,7 @@ public class TftMatchV1Assembler {
             TftDuo duo = duos.get(participant.getPartner_group_id().get() - 1);
             duo.placement = participant.getPlacement() / 2;
 
-            TftParticipant tftParticipant = mapToTftParticipant(participant, summoner1, summoner1Id, summoner2, summoner2Id);
+            TftParticipant tftParticipant = mapToTftParticipant(participant, summoner1Id, summoner1, summoner2Id, summoner2);
             duo.participants.add(tftParticipant);
         }
 
