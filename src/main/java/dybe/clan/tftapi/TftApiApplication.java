@@ -11,7 +11,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @SpringBootApplication
 public class TftApiApplication {
@@ -29,13 +31,22 @@ public class TftApiApplication {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+        config.setAllowedOrigins(getAllowedOrigins());
         config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowedHeaders(Collections.singletonList("*"));
         source.registerCorsConfiguration("/**", config);
         FilterRegistrationBean bean = new FilterRegistrationBean<>(new CorsFilter(source));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
+    }
+
+    private List<String> getAllowedOrigins() {
+        List<String> origins = new ArrayList<>();
+        origins.add("http://localhost:3000");
+        if (!(System.getenv("frontend_origin") == null) && !System.getenv("frontend_origin").isEmpty()) {
+            origins.add(System.getenv("frontend_origin"));
+        }
+        return origins;
     }
 
     public static void main(String[] args) {
