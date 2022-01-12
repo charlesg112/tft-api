@@ -21,13 +21,12 @@ public class TftMatchV1Assembler {
         }
 
         for (TftParticipantV1 participant : representation.info.participants) {
+            validateDoublesMatch(participant);
             TftDuo duo = duos.get(participant.getPartner_group_id().get() - 1);
-            List<TftUnit> units = participant.getUnits().stream().map(this::toTftUnit).collect(Collectors.toList());
-            List<TftTrait> traits = participant.getTraits().stream().map(this::toTftTrait).collect(Collectors.toList());
-            String name = getName(participant, summoner1Id, summoner1, summoner2Id, summoner2);
             duo.placement = participant.getPlacement() / 2;
 
-            duo.participants.add(new TftParticipant(name, participant.getTotal_damage_to_players(), participant.getLevel(), participant.getGold_left(), units, traits));
+            TftParticipant tftParticipant = mapToTftParticipant(participant, summoner1, summoner1Id, summoner2, summoner2Id);
+            duo.participants.add(tftParticipant);
         }
 
         return new TftMatch(matchId, duos, representation.info.getGame_datetime());
@@ -46,4 +45,16 @@ public class TftMatchV1Assembler {
         else if (participant.getPuuid().equals(summoner2Id)) return summoner2Name;
         return participant.getPuuid();
     }
+
+    private void validateDoublesMatch(TftParticipantV1 participant) {
+        if (!participant.getPartner_group_id().isPresent() || participant.getPartner_group_id().get() - 1 < 0) throw new NotADoublesGame();
+    }
+
+    private TftParticipant mapToTftParticipant(TftParticipantV1 participant, String summoner1Id, String summoner1, String summoner2Id, String summoner2) {
+        List<TftUnit> units = participant.getUnits().stream().map(this::toTftUnit).collect(Collectors.toList());
+        List<TftTrait> traits = participant.getTraits().stream().map(this::toTftTrait).collect(Collectors.toList());
+        String name = getName(participant, summoner1Id, summoner1, summoner2Id, summoner2);
+        return new TftParticipant(name, participant.getTotal_damage_to_players(), participant.getLevel(), participant.getGold_left(), units, traits);
+    }
+
 }

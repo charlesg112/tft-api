@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TftMatchV1 implements TftMatchAPI {
@@ -34,15 +33,10 @@ public class TftMatchV1 implements TftMatchAPI {
     public List<TftMatch> getMatches(String summoner1, String summoner2) {
         String firstSummonerId = getSummonerId(summoner1);
         String secondSummonerId = getSummonerId(summoner2);
+
         List<String> commonMatchesId = getCommonMatchesID(firstSummonerId, secondSummonerId);
-        List<TftMatch> output = new ArrayList<>();
-        for (String matchId : commonMatchesId) {
-            ResponseEntity<TftMatchV1Representation> responseEntity = restTemplate.getForEntity(getMatchInfoUrl(matchId), TftMatchV1Representation.class);
-            if (isDuoMatch(responseEntity.getBody())) {
-                output.add(mapper.toMatch(summoner1, firstSummonerId, summoner2, secondSummonerId, responseEntity.getBody(), matchId));
-            }
-        }
-        return output;
+
+        return getCommonMatches(commonMatchesId, summoner1, firstSummonerId, summoner2, secondSummonerId);
     }
 
     private List<String> getCommonMatchesID(String firstSummonerPuuid, String secondSummonerPuuid) {
@@ -71,6 +65,24 @@ public class TftMatchV1 implements TftMatchAPI {
 
     private boolean isDuoMatch(TftMatchV1Representation representation) {
         return representation.info.participants.get(0).getPartner_group_id().isPresent();
+    }
+
+    private List<TftMatch> getCommonMatches(List<String> commonMatchesId, String summoner1, String summoner1Id, String summoner2, String summoner2Id) {
+        List<TftMatch> output = new ArrayList<>();
+
+        for (String matchId : commonMatchesId) {
+            System.out.println(matchId);
+            ResponseEntity<TftMatchV1Representation> responseEntity = restTemplate.getForEntity(getMatchInfoUrl(matchId), TftMatchV1Representation.class);
+            if (responseEntity.getBody() != null & isDuoMatch(responseEntity.getBody())) {
+                try {
+                    output.add(mapper.toMatch(summoner1, summoner1Id, summoner2, summoner2Id, responseEntity.getBody(), matchId));
+                } catch (NotADoublesGame ignored) {
+
+                }
+            }
+        }
+
+        return output;
     }
 
 }
